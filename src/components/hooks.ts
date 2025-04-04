@@ -3,14 +3,15 @@ import { useRef, useState } from "react";
 import { createCoinbaseWalletSDK } from "@coinbase/wallet-sdk";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
 
-// WETH 和 ERC-20 ABI
+// 项目公共变量
+const PROJECT_NAME = "wallet connection test";
+const SEPOLIA_CHAIN_ID = "11155111";
+const WETH_ADDRESS = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"; // Sepolia WETH
 const WETH_ABI = [
     "function transfer(address to, uint256 amount) public returns (bool)",
     "function balanceOf(address account) public view returns (uint256)",
     "function decimals() public view returns (uint8)",
 ];
-
-const PROJECT_NAME = "wallet connection test"
 
 export const useMetaMask = () => {
     const [address, setAddress] = useState("");
@@ -20,23 +21,26 @@ export const useMetaMask = () => {
     const signerRef = useRef<ethers.JsonRpcSigner | null>(null);
     const providerRef = useRef<BrowserProvider | ethers.Provider | null>(null);
 
-    // 链配置
-    const SEPOLIA_CHAIN_ID = "11155111";
-    const WETH_ADDRESS = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"; // Sepolia WETH
-
     // 确保连接到 Sepolia 测试网
     const ensureSepoliaNetwork = async (provider: BrowserProvider) => {
         try {
             const network = await provider.getNetwork();
             const currentChainId = network.chainId.toString();
+            console.log("Current chainId:", currentChainId);
 
             if (currentChainId !== SEPOLIA_CHAIN_ID) {
+                console.log("Switching to Sepolia...");
                 await provider.send("wallet_switchEthereumChain", [
                     { chainId: `0x${parseInt(SEPOLIA_CHAIN_ID).toString(16)}` },
                 ]);
+                console.log("Switched to Sepolia");
+
+                // 等待网络切换完成
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             }
         } catch (switchError: any) {
             if (switchError.code === 4902) {
+                console.log("Adding Sepolia network...");
                 await provider.send("wallet_addEthereumChain", [
                     {
                         chainId: `0x${parseInt(SEPOLIA_CHAIN_ID).toString(16)}`,
@@ -46,7 +50,12 @@ export const useMetaMask = () => {
                         blockExplorerUrls: ["https://sepolia.etherscan.io"],
                     },
                 ]);
+                console.log("Sepolia network added");
+
+                // 等待网络添加完成
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             } else {
+                console.error("Network switch failed:", switchError);
                 throw new Error("请切换到 Sepolia 测试网！");
             }
         }
@@ -81,6 +90,7 @@ export const useMetaMask = () => {
     // Coinbase Wallet 连接
     const connectCoinbaseWallet = async () => {
         try {
+            setTxStatus("正在连接 Coinbase Wallet...");
             const coinbaseWallet = createCoinbaseWalletSDK({
                 appName: PROJECT_NAME,
                 appLogoUrl: "https://example.com/logo.png",
@@ -89,19 +99,26 @@ export const useMetaMask = () => {
             const provider = coinbaseWallet.getProvider();
             const accounts = await provider.request({ method: "eth_requestAccounts" }) as string[];
             const addr = accounts[0];
+            console.log("Coinbase Wallet address:", addr);
 
             const ethersProvider = new ethers.BrowserProvider(provider);
             await ensureSepoliaNetwork(ethersProvider);
 
+            // 确保网络切换完成后，provider 状态稳定
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
             const signer = await ethersProvider.getSigner();
 
             setAddress(addr);
-            setEthBalance(ethers.formatEther(await ethersProvider.getBalance(addr)));
+            setTxStatus("正在获取余额...");
+            const newBalance = await ethersProvider.getBalance(addr);
+            setEthBalance(ethers.formatEther(newBalance));
 
             const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, ethersProvider);
             let decimals = 18;
             try {
                 decimals = await wethContract.decimals();
+                console.log("WETH decimals:", decimals);
             } catch (error) {
                 console.error("获取 WETH decimals 失败，使用默认值 18:", error);
             }
@@ -110,8 +127,10 @@ export const useMetaMask = () => {
 
             signerRef.current = signer;
             providerRef.current = ethersProvider;
+            setTxStatus("连接成功！");
         } catch (error: any) {
             console.error("Coinbase Wallet 连接失败:", error);
+            setTxStatus(`连接失败: ${error.message}`);
             throw new Error(`Coinbase Wallet 连接失败: ${error.message}`);
         }
     };
@@ -119,7 +138,7 @@ export const useMetaMask = () => {
     // WalletConnect 连接
     const connectWalletConnect = async () => {
         try {
-            // 初始化 WalletConnect Provider
+            setTxStatus("正在初始化 WalletConnect...");
             const provider = await EthereumProvider.init({
                 projectId: "7e4a8847f85f0587eb5dee790394cac2",
                 chains: [parseInt(SEPOLIA_CHAIN_ID)],
@@ -139,10 +158,9 @@ export const useMetaMask = () => {
 
             console.log("WalletConnect provider initialized");
 
-            // 设置连接超时（例如 30 秒）
+            setTxStatus("请扫描二维码以连接钱包...");
             await provider.connect();
-
-            console.log("WalletConnect connected");
+            setTxStatus("WalletConnect 连接成功，等待账户授权...");
 
             const accounts = await provider.request({ method: "eth_requestAccounts" }) as string[];
             const addr = accounts[0];
@@ -154,28 +172,24 @@ export const useMetaMask = () => {
             const signer = await ethersProvider.getSigner();
 
             setAddress(addr);
+            setTxStatus("正在获取余额...");
             const newBalance = await ethersProvider.getBalance(addr);
             setEthBalance(ethers.formatEther(newBalance));
 
             const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, ethersProvider);
             let decimals = 18;
             try {
-                console.log(2);
                 decimals = await wethContract.decimals();
-                console.log(2, decimals);
+                console.log("WETH decimals:", decimals);
             } catch (error) {
-                console.log(2);
                 console.error("获取 WETH decimals 失败，使用默认值 18:", error);
-                console.log(2);
             }
-            console.log(2);
             const balance = await wethContract.balanceOf(addr);
-            console.log(2);
             setWethBalance(ethers.formatUnits(balance, decimals));
-            console.log(2);
 
             signerRef.current = signer;
             providerRef.current = ethersProvider;
+            setTxStatus("连接成功！");
 
             provider.on("disconnect", () => {
                 setAddress("");
@@ -187,6 +201,7 @@ export const useMetaMask = () => {
             });
         } catch (error: any) {
             console.error("WalletConnect 连接失败:", error);
+            setTxStatus(`连接失败: ${error.message}`);
             throw new Error(`WalletConnect 连接失败: ${error.message}`);
         }
     };
@@ -201,11 +216,10 @@ export const useMetaMask = () => {
                 throw new Error("请先连接钱包！");
             }
 
-            // 刷新 ETH 余额
+            setTxStatus("正在刷新余额...");
             const ethBalanceRaw = await provider.getBalance(addr);
             setEthBalance(ethers.formatEther(ethBalanceRaw));
 
-            // 刷新 WETH 余额
             const wethContract = new ethers.Contract(WETH_ADDRESS, WETH_ABI, provider);
             let decimals = 18;
             try {
@@ -251,8 +265,8 @@ export const useMetaMask = () => {
             const updatedBalance = await wethContract.balanceOf(await signer.getAddress());
             setWethBalance(ethers.formatUnits(updatedBalance, decimals));
         } catch (error: any) {
+            console.error("转账失败:", error);
             setTxStatus(`转账失败: ${error.message}`);
-            console.error(error);
         }
     };
 
@@ -261,7 +275,7 @@ export const useMetaMask = () => {
         connectCoinbaseWallet,
         connectWalletConnect,
         transferWeth,
-        refreshBalance, // 新增的刷新函数
+        refreshBalance,
         address,
         ethBalance,
         wethBalance,
