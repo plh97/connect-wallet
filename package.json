@@ -10,7 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@coinbase/wallet-sdk": "^4.3.2",
+    "@reown/appkit": "^1.7.2",
+    "@reown/appkit-adapter-ethers": "^1.7.2",
+    "@reown/walletkit": "^1.2.3",
+    "@walletconnect/core": "^2.19.2",
+    "@walletconnect/ethereum-provider": "^2.19.2",
+    "@walletconnect/utils": "^2.19.2",
+    "@web3-react/walletconnect-v2": "^8.5.0",
     "ethers": "^6.13.5",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
