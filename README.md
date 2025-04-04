@@ -2,7 +2,7 @@
 
 This project supports 3 kinds of wallet connections: MetaMask, Coinbase wallet, WalletConnect
 
-## WHole workflow
+## Whole workflow
 
 1. Connect wallet, switch to Sepolia testnet network
 2. Get wallet account address, Eth balance, WEth balance
