@@ -105,7 +105,7 @@ export const useMetaMask = () => {
             await ensureSepoliaNetwork(ethersProvider);
 
             // 确保网络切换完成后，provider 状态稳定
-            // await new Promise((resolve) => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
             const signer = await ethersProvider.getSigner();
 
