@@ -105,12 +105,14 @@ export const useMetaMask = () => {
             await ensureSepoliaNetwork(ethersProvider);
 
             // 确保网络切换完成后，provider 状态稳定
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // await new Promise((resolve) => setTimeout(resolve, 5000));
 
             const signer = await ethersProvider.getSigner();
 
             setAddress(addr);
             setTxStatus("正在获取余额...");
+            console.log("正在获取余额", addr);
+            
             const newBalance = await ethersProvider.getBalance(addr);
             setEthBalance(ethers.formatEther(newBalance));
 
