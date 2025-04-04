@@ -94,6 +94,7 @@ export const useMetaMask = () => {
             const coinbaseWallet = createCoinbaseWalletSDK({
                 appName: PROJECT_NAME,
                 appLogoUrl: "https://example.com/logo.png",
+                appChainIds: [+SEPOLIA_CHAIN_ID]
             });
 
             const provider = coinbaseWallet.getProvider();
