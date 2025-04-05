@@ -12,6 +12,7 @@ export function Wallet() {
         ethBalance,
         wethBalance,
         txStatus,
+        switchNetwork,
     } = useMetaMask();
     const [transferAmount, setTransferAmount] = useState("0.0000001");
     const [receiverAddress, setReceiverAddress] = useState(
@@ -34,6 +35,9 @@ export function Wallet() {
                     <button>已经连接钱包</button>
                     <button onClick={refreshBalance}>
                         刷新余额
+                    </button>
+                    <button onClick={switchNetwork}>
+                        switchNetwork
                     </button>
                 </>
             ) : (

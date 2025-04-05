@@ -6,6 +6,7 @@ import { EthereumProvider } from "@walletconnect/ethereum-provider";
 // 项目公共变量
 const PROJECT_NAME = "wallet connection test";
 const SEPOLIA_CHAIN_ID = "11155111";
+const SEPOLIA_NETWORK = "https://sepolia.infura.io/v3/3311245dce034f8ab2767343e96a65b3";
 const WETH_ADDRESS = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"; // Sepolia WETH
 const WETH_ABI = [
     "function transfer(address to, uint256 amount) public returns (bool)",
@@ -34,9 +35,6 @@ export const useMetaMask = () => {
                     { chainId: `0x${parseInt(SEPOLIA_CHAIN_ID).toString(16)}` },
                 ]);
                 console.log("Switched to Sepolia");
-
-                // 等待网络切换完成
-                await new Promise((resolve) => setTimeout(resolve, 1000));
             }
         } catch (switchError: any) {
             if (switchError.code === 4902) {
@@ -45,7 +43,7 @@ export const useMetaMask = () => {
                     {
                         chainId: `0x${parseInt(SEPOLIA_CHAIN_ID).toString(16)}`,
                         chainName: "Sepolia Test Network",
-                        rpcUrls: ["https://rpc.sepolia.org"],
+                        rpcUrls: [SEPOLIA_NETWORK],
                         nativeCurrency: { name: "Sepolia ETH", symbol: "ETH", decimals: 18 },
                         blockExplorerUrls: ["https://sepolia.etherscan.io"],
                     },
@@ -64,9 +62,10 @@ export const useMetaMask = () => {
     // MetaMask 连接
     const connectMetaMask = async () => {
         if (!window.ethereum) throw new Error("请安装 MetaMask！");
-        const provider = new ethers.BrowserProvider(window.ethereum);
+        let provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         await ensureSepoliaNetwork(provider);
+        provider = new ethers.BrowserProvider(window.ethereum);
 
         const signer = await provider.getSigner();
         const addr = await signer.getAddress();
@@ -94,16 +93,17 @@ export const useMetaMask = () => {
             const coinbaseWallet = createCoinbaseWalletSDK({
                 appName: PROJECT_NAME,
                 appLogoUrl: "https://example.com/logo.png",
-                appChainIds: [+SEPOLIA_CHAIN_ID]
+                appChainIds: [1, +SEPOLIA_CHAIN_ID]
             });
 
-            const provider = coinbaseWallet.getProvider();
-            const accounts = await provider.request({ method: "eth_requestAccounts" }) as string[];
-            const addr = accounts[0];
+            let provider = coinbaseWallet.getProvider();
+            let accounts = await provider.request({ method: "eth_requestAccounts" }) as string[];
+            let addr = accounts[0];
             console.log("Coinbase Wallet address:", addr);
 
-            const ethersProvider = new ethers.BrowserProvider(provider);
+            let ethersProvider = new ethers.BrowserProvider(provider);
             await ensureSepoliaNetwork(ethersProvider);
+            ethersProvider = new ethers.BrowserProvider(provider);
 
             // 确保网络切换完成后，provider 状态稳定
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -113,7 +113,7 @@ export const useMetaMask = () => {
             setAddress(addr);
             setTxStatus("正在获取余额...");
             console.log("正在获取余额", addr);
-            
+
             const newBalance = await ethersProvider.getBalance(addr);
             setEthBalance(ethers.formatEther(newBalance));
 
@@ -147,8 +147,8 @@ export const useMetaMask = () => {
                 chains: [parseInt(SEPOLIA_CHAIN_ID)],
                 optionalChains: [1, parseInt(SEPOLIA_CHAIN_ID)],
                 rpcMap: {
-                    [SEPOLIA_CHAIN_ID]: "https://sepolia.infura.io/v3/3311245dce034f8ab2767343e96a65b3",
                     "1": "https://chain-proxy.wallet.coinbase.com?targetName=ethereum-mainnet",
+                    [SEPOLIA_CHAIN_ID]: SEPOLIA_NETWORK,
                 },
                 showQrModal: true,
                 metadata: {
