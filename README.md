@@ -13,5 +13,5 @@ This project supports 3 kinds of wallet connections: MetaMask, Coinbase wallet, 
 ![image](https://github.com/user-attachments/assets/ef5c2b75-f7eb-40a7-8182-d5ad25cc11c2)
 
 
-![video](https://github.com/user-attachments/assets/66d1f514-9336-43a4-b7f1-dd82973822ba)
-
+## Video
+[https://github.com/user-attachments/assets/66d1f514-9336-43a4-b7f1-dd82973822ba](https://github.com/user-attachments/assets/66d1f514-9336-43a4-b7f1-dd82973822ba)
