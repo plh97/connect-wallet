@@ -12,6 +12,7 @@ export function Wallet() {
         ethBalance,
         wethBalance,
         txStatus,
+        transferHash,
     } = useMetaMask();
     const [transferAmount, setTransferAmount] = useState("0.0000001");
     const [receiverAddress, setReceiverAddress] = useState(
@@ -45,12 +46,12 @@ export function Wallet() {
             )}
             {address && (
                 <div className="account-info">
-                    <h3>账户地址: {address}</h3>
+                    <h3>账户地址: <a target="_blank" href={`https://sepolia.etherscan.io/address/${address}`}>{address}</a></h3>
                     <h3>ETH 余额: {ethBalance || "加载中..."}</h3>
                     <h3>WETH 余额: {wethBalance || "加载中..."}</h3>
 
                     <h3>
-                        转账 WETH 金额:
+                        转账 WETH 金额:&nbsp;
                         <input
                             value={transferAmount}
                             onChange={(e) => setTransferAmount(e.target.value)}
@@ -58,8 +59,9 @@ export function Wallet() {
                         />
                     </h3>
                     <h3>
-                        接收地址:
+                        接收地址:&nbsp;
                         <input
+                            style={{ width: '350px' }}
                             value={receiverAddress}
                             onChange={(e) => setReceiverAddress(e.target.value)}
                             placeholder="接收地址"
@@ -69,6 +71,9 @@ export function Wallet() {
                         发送 WETH
                     </button>
                     {txStatus && <p>{txStatus}</p>}
+                    {transferHash && <>
+                        交易哈希: <a target="_blank" href={`https://sepolia.etherscan.io/tx/${transferHash}`}>{transferHash}</a>
+                    </>}
                 </div>
             )}
         </main>

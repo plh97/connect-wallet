@@ -19,6 +19,7 @@ export const useMetaMask = () => {
     const [ethBalance, setEthBalance] = useState("");
     const [wethBalance, setWethBalance] = useState("");
     const [txStatus, setTxStatus] = useState("");
+    const [transferHash, setTransferHash] = useState("");
     const signerRef = useRef<ethers.JsonRpcSigner | null>(null);
     const providerRef = useRef<BrowserProvider | ethers.Provider | null>(null);
 
@@ -263,7 +264,8 @@ export const useMetaMask = () => {
 
             const tx = await wethContract.transfer(recipientAddress, amountInUnits);
             const receipt = await tx.wait();
-            setTxStatus(`转账成功！交易哈希: ${receipt.hash}`);
+            setTxStatus(`转账成功！`);
+            setTransferHash(receipt.hash);
 
             const updatedBalance = await wethContract.balanceOf(await signer.getAddress());
             setWethBalance(ethers.formatUnits(updatedBalance, decimals));
@@ -283,5 +285,6 @@ export const useMetaMask = () => {
         ethBalance,
         wethBalance,
         txStatus,
+        transferHash,
     };
 };
