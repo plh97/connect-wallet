@@ -14,7 +14,8 @@ https://connect-wallet-smoky.vercel.app
 
 ## Example
 
-![image](https://github.com/user-attachments/assets/ef5c2b75-f7eb-40a7-8182-d5ad25cc11c2)
+![image](https://github.com/user-attachments/assets/7d0f2e81-6dc6-48a9-adce-4d3681920af5)
+
 
 
 ## Video
