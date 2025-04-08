@@ -15,9 +15,7 @@ export function Wallet() {
         transferHash,
     } = useMetaMask();
     const [transferAmount, setTransferAmount] = useState("0.0000001");
-    const [receiverAddress, setReceiverAddress] = useState(
-        "0x22404D10D904e9965bAF6682418C18dF22E31298"
-    );
+    const [receiverAddress, setReceiverAddress] = useState("");
 
     return (
         <main
